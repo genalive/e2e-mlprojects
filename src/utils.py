@@ -10,7 +10,7 @@ from src.exception import CustomException
 #import dill # helps creation of pickle file
 import pickle
 from sklearn.metrics import r2_score
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV #helps with the hyperparameter tuning
 
 # save_object function:
 def save_object(file_path, obj):
