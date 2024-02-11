@@ -2,7 +2,7 @@ import os
 import sys
 from dataclasses import dataclass
 
-from catboost import CatBoostRegressor
+#from catboost import CatBoostRegressor
 from sklearn.ensemble import (
     AdaBoostRegressor,
     GradientBoostingRegressor,
@@ -16,34 +16,39 @@ from xgboost import XGBRegressor
 
 from src.exception import CustomException
 from src.logger import logging
-
 from src.utils import save_object,evaluate_models
 
+
+# Create dataclass again:
 @dataclass
-class ModelTrainerConfig:
+class ModelTrainerConfig: # Sets up the output
     trained_model_file_path=os.path.join("artifacts","model.pkl")
 
-class ModelTrainer:
+class ModelTrainer: #second class responsible for training model
     def __init__(self):
-        self.model_trainer_config=ModelTrainerConfig()
+        self.model_trainer_config=ModelTrainerConfig() #sets pathname
 
-
+    # This initiate the model training:
+        # from data_transformation.py's initiate_data_transformation:
+        # it returns train_array, and test_array which feeds into this func
+        # it's structured as np.[input_arr, np.array(target_feature_df)]
     def initiate_model_trainer(self,train_array,test_array):
         try:
             logging.info("Split training and test input data")
             X_train,y_train,X_test,y_test=(
-                train_array[:,:-1],
+                train_array[:,:-1], # the last column removed is the y_train
                 train_array[:,-1],
                 test_array[:,:-1],
                 test_array[:,-1]
             )
+            # dictionary of models:
             models = {
                 "Random Forest": RandomForestRegressor(),
                 "Decision Tree": DecisionTreeRegressor(),
                 "Gradient Boosting": GradientBoostingRegressor(),
                 "Linear Regression": LinearRegression(),
                 "XGBRegressor": XGBRegressor(),
-                "CatBoosting Regressor": CatBoostRegressor(verbose=False),
+                #"CatBoosting Regressor": CatBoostRegressor(verbose=False),
                 "AdaBoost Regressor": AdaBoostRegressor(),
             }
             params={
@@ -71,11 +76,11 @@ class ModelTrainer:
                     'learning_rate':[.1,.01,.05,.001],
                     'n_estimators': [8,16,32,64,128,256]
                 },
-                "CatBoosting Regressor":{
-                    'depth': [6,8,10],
-                    'learning_rate': [0.01, 0.05, 0.1],
-                    'iterations': [30, 50, 100]
-                },
+                #"CatBoosting Regressor":{
+                #    'depth': [6,8,10],
+                #    'learning_rate': [0.01, 0.05, 0.1],
+                #    'iterations': [30, 50, 100]
+                #},
                 "AdaBoost Regressor":{
                     'learning_rate':[.1,.01,0.5,.001],
                     # 'loss':['linear','square','exponential'],
@@ -84,31 +89,43 @@ class ModelTrainer:
                 
             }
 
+            # this is reporting against the dictionary of models:
+            # we'll use evaluate_models in utils.py
+            # which fits models, and calcs R2 score
             model_report:dict=evaluate_models(X_train=X_train,y_train=y_train,X_test=X_test,y_test=y_test,
                                              models=models,param=params)
-            
+
+
             ## To get best model score from dict
             best_model_score = max(sorted(model_report.values()))
 
-            ## To get best model name from dict
+            ## To get best model name from dict - indexing to get the name
 
             best_model_name = list(model_report.keys())[
                 list(model_report.values()).index(best_model_score)
             ]
             best_model = models[best_model_name]
 
+            # Gives an addition if exception, all models below 0.6:
             if best_model_score<0.6:
                 raise CustomException("No best model found")
             logging.info(f"Best found model on both training and testing dataset")
 
+            # Note: if we want to load preprocessing pickle file:
+            # preprocessing_obj = ... pickle load
+
+            # Again, we are saving the model, to the output class file_path:
             save_object(
                 file_path=self.model_trainer_config.trained_model_file_path,
                 obj=best_model
             )
 
+            # Applying predictions from best model to 'predicted'
             predicted=best_model.predict(X_test)
 
             r2_square = r2_score(y_test, predicted)
+
+            # returns r2_square
             return r2_square
             
 

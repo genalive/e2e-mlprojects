@@ -127,9 +127,12 @@ class DataTransformation:
                 f"Applying preprocessing object on training dataframe and testing dataframe."
             )
 
-
-            input_feature_train_arr=preprocessing_obj.fit_transform(input_feature_train_df)
-            input_feature_test_arr=preprocessing_obj.transform(input_feature_test_df)
+            # Applying the logic of preprocessing_obj to SKlearn's fit_transform
+            # eg. scaler = StandardScaler()
+            # X_train_scaled = scaler.fit_transform(X_train)
+            # X_test_scaled = scaler.transform(X_test)
+            input_feature_train_arr=preprocessing_obj.fit_transform(input_feature_train_df) #fit_transform(input_df)
+            input_feature_test_arr=preprocessing_obj.transform(input_feature_test_df) #transform(test-df)
 
             train_arr = np.c_[
                 input_feature_train_arr, np.array(target_feature_train_df)

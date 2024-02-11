@@ -4,6 +4,7 @@ seaborn
 matplotlib
 scikit-learn
 pickle5
+xgboost
 dill
 catboost
 #-e .
