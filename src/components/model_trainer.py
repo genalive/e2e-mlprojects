@@ -51,6 +51,8 @@ class ModelTrainer: #second class responsible for training model
                 #"CatBoosting Regressor": CatBoostRegressor(verbose=False),
                 "AdaBoost Regressor": AdaBoostRegressor(),
             }
+            # hyper parameter tuning:
+            # can use YAML file instead.
             params={
                 "Decision Tree": {
                     'criterion':['squared_error', 'friedman_mse', 'absolute_error', 'poisson'],
